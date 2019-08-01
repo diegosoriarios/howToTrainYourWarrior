@@ -1,8 +1,8 @@
 let game;
 let gameOptions = {
     gravity: 1,
-    maxItemsPerLevel: 30,
-    maxIterations: 10,
+    maxItemsPerLevel: 80,
+    maxIterations: 25,
     minItemsDistance: 160
 }
 
@@ -14,6 +14,12 @@ let lives = totalLifes
 const HERO = 0;
 const COIN = 1;
 const SKULL = 2;
+const SKULL2 = 3;
+const POINTS = 4;
+const LIFES = 5;
+
+let skulls2 = []
+let points2 = []
 
 window.onload = function() {
     let gameConfig = {
@@ -25,7 +31,7 @@ window.onload = function() {
             width: 750,
             height: 1334
         },
-        scene: [playGame, Menu],
+        scene: [playGame, Menu, TrainingScreen],
         //scene: [Menu, playGame], //Final
         physics: {
             default: "matter",
@@ -46,16 +52,13 @@ class Menu extends Phaser.Scene {
     }
 
     create() {
-        console.log(game)
-        let nome = this.add.text((game.canvas.width / 2) - 248, 150, 'NOME DO JOGO', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
-        console.log(nome.width)
+        this.add.text((game.canvas.width / 2) - 248, 150, 'NOME DO JOGO', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
         this.playText = this.add.text((game.canvas.width / 2) - 248, game.canvas.height / 2, 'Play', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
         this.playText.setInteractive(new Phaser.Geom.Rectangle(0, 0, this.playText.width, this.playText.height), Phaser.Geom.Rectangle.Contains);
         this.playText.on("pointerdown", this.startGame);
     }
 
     startGame() {
-        console.log('aqui')
         play = true
     }
     
@@ -71,9 +74,9 @@ class playGame extends Phaser.Scene{
         super("PlayGame");
     }
     preload(){
-        this.load.spritesheet("items", "items.png", {
-            frameWidth: 128,
-            frameHeight: 128
+        this.load.spritesheet("items", "items-min.png", {
+            frameWidth: 64,
+            frameHeight: 64
         });
     }
     create(){
@@ -90,7 +93,7 @@ class playGame extends Phaser.Scene{
                     b1.gameObject.visible = false;
                     this.matter.world.remove(b1);
                     score++
-                    console.log(score, lives)
+                    this.cameras.main.flash(50, 255, 255, 0);
                     break;
                 case SKULL:
                     if(b1.gameObject.y > b2.gameObject.y){
@@ -102,7 +105,39 @@ class playGame extends Phaser.Scene{
                         this.cameras.main.flash(50, 255, 0, 0);
                     }
                     lives--
-                    console.log(score, lives)
+                    break;
+                case SKULL2:
+                    if(b1.gameObject.y > b2.gameObject.y){
+                        if(skulls2[skulls2.length - 1].hp == 1) {
+                            b1.gameObject.visible = false;
+                            this.matter.world.remove(b1);
+                            this.cameras.main.flash(50, 255, 0, 0);
+                            skulls2.splice(skulls2.length - 1, 1)
+                        } else {
+                            skulls2[skulls2.length - 1].hp--
+                        }
+                    }
+                    else{
+                        this.cameras.main.flash(50, 255, 0, 0);
+                    }
+                    lives--
+                    break
+                case POINTS:
+                    if(points2[points2.length - 1].hp == 1) {
+                        b1.gameObject.visible = false;
+                        this.matter.world.remove(b1);
+                        score++
+                    } else {
+                        points2[points2.length - 1].hp--
+                    }
+                    this.cameras.main.flash(50, 255, 255, 0);
+                    score++
+                    break;
+                case LIFES:
+                    b1.gameObject.visible = false;
+                    this.matter.world.remove(b1);
+                    lives++
+                    this.cameras.main.flash(50, 50, 50, 50);
                     break;
                 default:
                     if(b2.gameObject.y > game.config.height){
@@ -136,13 +171,26 @@ class playGame extends Phaser.Scene{
                 item.setCircle();
                 item.setStatic(true);
                 this.gameItems.add(item);
-                if(Phaser.Math.Between(0, 99) > 50){
+                let random = Phaser.Math.Between(0, 99)
+                if(random < 20){
                     item.setFrame(1);
                     item.body.label = COIN;
-                }
-                else{
+                } else if (random < 40) {
                     item.setFrame(2);
                     item.body.label = SKULL;
+                } else if (random < 60) {
+                    item.setFrame(2)
+                    item.body.label = SKULL2;
+                    let skullEnemy = {index: skulls2.length, hp: 2}
+                    skulls2.push(skullEnemy)
+                } else if (random < 80) {
+                    item.setFrame(1)
+                    item.body.label = POINTS;
+                    let points = {index: points2.length, hp: 2}
+                    points2.push(points)   
+                } else {
+                    item.setFrame(1);
+                    item.body.label = LIFES;
                 }
             }
         }
@@ -182,12 +230,38 @@ class playGame extends Phaser.Scene{
             //this.create()
             play = false
             lives = totalLifes
-            this.scene.start("Menu");
+            this.scene.start("Training");
         }
     }
 };
 
 
 class TrainingScreen extends Phaser.Scene {
+    constructor() {
+        super("Training")
+    }
 
+    create() {
+        this.add.text((game.canvas.width / 2) - 248, 150, 'NOME DO JOGO', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
+        this.add.text((game.canvas.width / 2) - 248, 214, score, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
+        this.buyLife = this.add.text((game.canvas.width / 2) - 248, game.canvas.height / 2, '+ Life', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
+        this.buyLife.setInteractive(new Phaser.Geom.Rectangle(0, 0, this.buyLife.width, this.buyLife.height), Phaser.Geom.Rectangle.Contains);
+        this.buyLife.on("pointerdown", this.startGame);
+        this.buyMoney = this.add.text((game.canvas.width / 2) - 248, game.canvas.height / 2 + 128, '+ Money', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
+        this.buyMoney.setInteractive(new Phaser.Geom.Rectangle(0, 0, this.buyMoney.width, this.buyMoney.height), Phaser.Geom.Rectangle.Contains);
+        this.buyMoney.on("pointerdown", this.startGame);
+        this.playText = this.add.text((game.canvas.width / 2) - 248, game.canvas.height - 128, 'Play', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
+        this.playText.setInteractive(new Phaser.Geom.Rectangle(0, 0, this.playText.width, this.playText.height), Phaser.Geom.Rectangle.Contains);
+        this.playText.on("pointerdown", this.startGame);
+    }
+
+    startGame() {
+        play = true
+    }
+    
+    update() {
+        if(play) {
+            this.scene.start("PlayGame");
+        }
+    }
 }

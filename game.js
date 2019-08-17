@@ -56,6 +56,9 @@ class Menu extends Phaser.Scene {
             frameWidth: 512,
             frameHeight: 512
         });
+
+        this.load.image("lives", "assets/heart.png");
+        this.load.image("coins", "assets/coin.png");
     }
 
     create() {
@@ -68,8 +71,18 @@ class Menu extends Phaser.Scene {
         })
 
         this.add.text((game.canvas.width / 2) - 248, 150, 'NOME DO JOGO', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
+
+        //Lives
+        this.add.image(game.canvas.width - 128, game.canvas.height / 2 - 128, 'lives');
+        this.add.text(game.canvas.width - 180, game.canvas.height / 2 - 72, 'Lives: ' + lives, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
+
+        //Coins
+        this.add.image(game.canvas.width - 128, game.canvas.height / 2 + 64, 'coins');
+        this.add.text(game.canvas.width - 180, game.canvas.height / 2 + 128, 'Coins: ' + score, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
+
         this.playText = this.add.text((game.canvas.width / 2) - 248, game.canvas.height - 128, 'Play', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
         this.playText.setInteractive(new Phaser.Geom.Rectangle(0, 0, this.playText.width, this.playText.height), Phaser.Geom.Rectangle.Contains);
+        
         let sprite = this.add.sprite(game.canvas.width / 2 - 128, game.canvas.height / 2 - 32, "player");
 
         sprite.play('moving')
@@ -252,7 +265,8 @@ class playGame extends Phaser.Scene{
             //this.create()
             play = false
             lives = totalLifes
-            this.scene.start("Training");
+            //this.scene.start("Training");
+            this.scene.start("Menu");
         }
     }
 };

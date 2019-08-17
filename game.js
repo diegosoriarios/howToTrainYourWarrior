@@ -31,8 +31,8 @@ window.onload = function() {
             width: 750,
             height: 1334
         },
-        scene: [playGame, Menu, TrainingScreen],
-        //scene: [Menu, playGame], //Final
+        //scene: [playGame, Menu, TrainingScreen],
+        scene: [Menu, playGame], //Final
         physics: {
             default: "matter",
             matter: {
@@ -51,10 +51,32 @@ class Menu extends Phaser.Scene {
         super("Menu")
     }
 
+    preload() {
+        this.load.spritesheet("player", "assets/player.png", {
+            frameWidth: 512,
+            frameHeight: 512
+        });
+    }
+
     create() {
+
+        let moving = this.anims.create({
+            key: 'moving',
+            frames: this.anims.generateFrameNumbers("player", {prefix: 'moving_', end: 15, zeroPad: 4}),
+            frameRate: 2,
+            repeat: -1
+        })
+
         this.add.text((game.canvas.width / 2) - 248, 150, 'NOME DO JOGO', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
-        this.playText = this.add.text((game.canvas.width / 2) - 248, game.canvas.height / 2, 'Play', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
+        this.playText = this.add.text((game.canvas.width / 2) - 248, game.canvas.height - 128, 'Play', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
         this.playText.setInteractive(new Phaser.Geom.Rectangle(0, 0, this.playText.width, this.playText.height), Phaser.Geom.Rectangle.Contains);
+        let sprite = this.add.sprite(game.canvas.width / 2 - 128, game.canvas.height / 2 - 32, "player");
+
+        sprite.play('moving')
+        //sprite.anims.setRepeat(8)
+
+        
+
         this.playText.on("pointerdown", this.startGame);
     }
 

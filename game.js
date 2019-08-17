@@ -74,7 +74,7 @@ class Menu extends Phaser.Scene {
 
         //Lives
         this.add.image(game.canvas.width - 128, game.canvas.height / 2 - 128, 'lives');
-        this.add.text(game.canvas.width - 180, game.canvas.height / 2 - 72, 'Lives: ' + lives, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
+        this.add.text(game.canvas.width - 180, game.canvas.height / 2 - 72, 'Lives: ' + totalLifes, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
 
         //Coins
         this.add.image(game.canvas.width - 128, game.canvas.height / 2 + 64, 'coins');

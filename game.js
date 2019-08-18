@@ -10,6 +10,8 @@ let score = 0
 let play = false
 let totalLifes = 5
 let lives = totalLifes
+let level = 5
+let room = 0
 
 const HERO = 0;
 const COIN = 1;
@@ -70,23 +72,31 @@ class Menu extends Phaser.Scene {
             repeat: -1
         })
 
-        this.add.text((game.canvas.width / 2) - 248, 150, 'NOME DO JOGO', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
+        let totalLevel = new Phaser.Geom.Rectangle(50, 25, game.canvas.width - 100, 20);
+        let totalLevelGraphics = this.add.graphics({ fillStyle: { color: 0x0000ff } });
+        totalLevelGraphics.fillRectShape(totalLevel);
+
+        var xp = new Phaser.Geom.Rectangle(50, 25, level * ( (game.canvas.width - 100) / 10), 20);
+        var xpGraphics = this.add.graphics({ fillStyle: { color: 0xff0000 } });
+        xpGraphics.fillRectShape(xp);
+        //graphics.setInteractive(rect, event);
+
+        //this.add.text((game.canvas.width / 2) - 248, 150, 'NOME DO JOGO', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
 
         //Lives
-        this.add.image(game.canvas.width - 128, game.canvas.height / 2 - 128, 'lives');
-        this.add.text(game.canvas.width - 180, game.canvas.height / 2 - 72, 'Lives: ' + totalLifes, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
+        this.add.image(128, 256, 'lives');
+        this.add.text(74, 300, 'Lives: ' + totalLifes, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
 
         //Coins
-        this.add.image(game.canvas.width - 128, game.canvas.height / 2 + 64, 'coins');
-        this.add.text(game.canvas.width - 180, game.canvas.height / 2 + 128, 'Coins: ' + score, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
+        this.add.image(392, 256, 'coins');
+        this.add.text(300, 300, 'Coins: ' + score, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
 
-        this.playText = this.add.text((game.canvas.width / 2) - 248, game.canvas.height - 128, 'Play', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
+        this.playText = this.add.text((game.canvas.width / 2) - 32, game.canvas.height - 128, 'Play', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
         this.playText.setInteractive(new Phaser.Geom.Rectangle(0, 0, this.playText.width, this.playText.height), Phaser.Geom.Rectangle.Contains);
         
-        let sprite = this.add.sprite(game.canvas.width / 2 - 128, game.canvas.height / 2 - 32, "player");
+        let sprite = this.add.sprite(game.canvas.width / 2, game.canvas.height / 2 + 128, "player");
 
         sprite.play('moving')
-        //sprite.anims.setRepeat(8)
 
         
 

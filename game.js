@@ -10,8 +10,9 @@ let score = 0
 let play = false
 let totalLifes = 5
 let lives = totalLifes
-let level = 5
+let experience = 0
 let room = 0
+let level = 0
 
 const HERO = 0;
 const COIN = 1;
@@ -33,7 +34,7 @@ window.onload = function() {
             width: 750,
             height: 1334
         },
-        //scene: [playGame, Menu, TrainingScreen],
+        //scene: [playGame, Menu, MainScreen],
         scene: [Menu, playGame], //Final
         physics: {
             default: "matter",
@@ -76,12 +77,13 @@ class Menu extends Phaser.Scene {
         let totalLevelGraphics = this.add.graphics({ fillStyle: { color: 0x0000ff } });
         totalLevelGraphics.fillRectShape(totalLevel);
 
-        var xp = new Phaser.Geom.Rectangle(50, 25, level * ( (game.canvas.width - 100) / 10), 20);
+        var xp = new Phaser.Geom.Rectangle(50, 25, experience * ( (game.canvas.width - 100) / `1${level * 5}`), 20);
         var xpGraphics = this.add.graphics({ fillStyle: { color: 0xff0000 } });
         xpGraphics.fillRectShape(xp);
         //graphics.setInteractive(rect, event);
 
-        //this.add.text((game.canvas.width / 2) - 248, 150, 'NOME DO JOGO', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
+        this.add.text(game.canvas.width - 112, 50, `${experience}/1${level * 5}`, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
+        this.add.text(50, 50, `Level: ${level}`, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
 
         //Lives
         this.add.image(128, 256, 'lives');
@@ -125,8 +127,10 @@ class playGame extends Phaser.Scene{
         });
     }
     create(){
+        room++
         this.score = this.add.text(10, 10, `Score ${score}`, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
         this.lives = this.add.text(10, 50, `Lives ${lives}`, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
+        this.rooms = this.add.text(150, 10, `Room ${room}`, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
         this.canSummonHero = true;
         this.matter.world.update30Hz();
         this.matter.world.setBounds(0, -400, game.config.width, game.config.height + 800);
@@ -217,18 +221,18 @@ class playGame extends Phaser.Scene{
                 item.setStatic(true);
                 this.gameItems.add(item);
                 let random = Phaser.Math.Between(0, 99)
-                if(random < 20){
+                if(random < 25){
                     item.setFrame(1);
                     item.body.label = COIN;
-                } else if (random < 40) {
+                } else if (random < 50) {
                     item.setFrame(2);
                     item.body.label = SKULL;
-                } else if (random < 60) {
+                } else if (random < 75) {
                     item.setFrame(2)
                     item.body.label = SKULL2;
                     let skullEnemy = {index: skulls2.length, hp: 2}
                     skulls2.push(skullEnemy)
-                } else if (random < 80) {
+                } else if (random < 95) {
                     item.setFrame(1)
                     item.body.label = POINTS;
                     let points = {index: points2.length, hp: 2}
@@ -269,36 +273,34 @@ class playGame extends Phaser.Scene{
     update() {
         this.score.destroy()
         this.lives.destroy()
+        this.rooms.destroy()
         this.score = this.add.text(10, 10, `Score ${score}`, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
         this.lives = this.add.text(10, 50, `Lives ${lives}`, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
+        this.rooms = this.add.text(game.canvas.width / 2 - 32, 10, `Room ${room}`, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
         if(lives === 0) {
             //this.create()
             play = false
             lives = totalLifes
-            //this.scene.start("Training");
+            experience += (room - 1)
+            room = 0
+            if(experience >= 10) {
+                level++
+                experience -= 10
+            }
+            //this.scene.start("MainScreen");
             this.scene.start("Menu");
         }
     }
 };
 
 
-class TrainingScreen extends Phaser.Scene {
+class MainScreen extends Phaser.Scene {
     constructor() {
-        super("Training")
+        super("MainScreen")
     }
 
     create() {
         this.add.text((game.canvas.width / 2) - 248, 150, 'NOME DO JOGO', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
-        this.add.text((game.canvas.width / 2) - 248, 214, score, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
-        this.buyLife = this.add.text((game.canvas.width / 2) - 248, game.canvas.height / 2, '+ Life', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
-        this.buyLife.setInteractive(new Phaser.Geom.Rectangle(0, 0, this.buyLife.width, this.buyLife.height), Phaser.Geom.Rectangle.Contains);
-        this.buyLife.on("pointerdown", this.startGame);
-        this.buyMoney = this.add.text((game.canvas.width / 2) - 248, game.canvas.height / 2 + 128, '+ Money', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
-        this.buyMoney.setInteractive(new Phaser.Geom.Rectangle(0, 0, this.buyMoney.width, this.buyMoney.height), Phaser.Geom.Rectangle.Contains);
-        this.buyMoney.on("pointerdown", this.startGame);
-        this.playText = this.add.text((game.canvas.width / 2) - 248, game.canvas.height - 128, 'Play', { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
-        this.playText.setInteractive(new Phaser.Geom.Rectangle(0, 0, this.playText.width, this.playText.height), Phaser.Geom.Rectangle.Contains);
-        this.playText.on("pointerdown", this.startGame);
     }
 
     startGame() {

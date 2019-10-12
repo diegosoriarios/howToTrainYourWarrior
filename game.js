@@ -6,7 +6,7 @@ let gameOptions = {
     minItemsDistance: 160
 }
 
-let score = 0
+let score = 10
 let play = false
 let totalLifes = 5
 let lives = totalLifes
@@ -15,7 +15,7 @@ let room = 0
 let level = 0
 let powerUp = 0
 let coinUp = 1
-let lifeprice = coinPrice = 5
+let lifePrice = coinPrice = 5
 
 const HERO = 0;
 const COIN = 1;
@@ -90,7 +90,7 @@ class Menu extends Phaser.Scene {
 
         //Lives
         this.add.image(128, 256, 'lives');
-        this.add.text(74, 300, 'Lives: ' + totalLifes, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
+        this.totalLivesText = this.add.text(74, 300, 'Lives: ' + totalLifes, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
 
         //Coins
         this.add.image(392, 256, 'coins');
@@ -111,7 +111,7 @@ class Menu extends Phaser.Scene {
         let buyRect = new Phaser.Geom.Rectangle(64, game.canvas.height - 142, 190, 100);
         var graphics = this.add.graphics({ fillStyle: { color: 0x0000ff } });
         graphics.fillRectShape(buyRect);
-        this.buyText = this.add.text(92, game.canvas.height - 128, 'Life ' + lifeprice, { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
+        this.buyText = this.add.text(92, game.canvas.height - 128, 'Life ' + lifePrice, { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
         this.buyText.setInteractive(new Phaser.Geom.Rectangle(0, 0, this.buyText.width, this.buyText.height), Phaser.Geom.Rectangle.Contains);
 
         /**
@@ -138,19 +138,41 @@ class Menu extends Phaser.Scene {
     }
 
     lifesUpgrade() {
-        totalLifes++
-        lifePrice += 5
+        if(score >= lifePrice) {
+            totalLifes++
+            lifePrice += 5
+            score -= lifePrice
+            console.log(totalLifes)
+        } else {
+            console.log("SCORE", score)
+            console.log("LIFE PRICE", lifePrice)
+            console.log("nop")
+        }
     }
 
     coinsUpgrade() {
-        coinUp++
-        coinPrice += 5
+        if(score >= coinPrice){
+            coinUp++
+            coinPrice += 5
+            score -= coinPrice
+        } else {
+            console.log("SCORE", score)
+            console.log("COIN PRICE", coinPrice)
+            console.log("nOp")
+        }
     }
     
     update() {
         if(play) {
             this.scene.start("PlayGame");
         }
+
+        //this.buyText.destroy()
+        //this.coinText.destroy()
+        this.totalLivesText.destroy()
+        this.buyText = this.add.text(92, game.canvas.height - 128, 'Life ' + lifePrice, { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
+        this.coinText = this.add.text(game.canvas.width - 176, game.canvas.height - 128, 'coin' + coinPrice, { fontFamily: 'Arial', fontSize: 64, color: '#fff' });
+        this.totalLivesText = this.add.text(74, 300, 'Lives: ' + totalLifes, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
     }
 }
 
@@ -166,6 +188,7 @@ class playGame extends Phaser.Scene{
     }
     create(){
         room++
+        lives = totalLifes
         this.score = this.add.text(10, 10, `Score ${score}`, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
         this.lives = this.add.text(10, 50, `Lives ${lives}`, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
         this.rooms = this.add.text(150, 10, `Room ${room}`, { fontFamily: 'Arial', fontSize: 32, color: '#fff' });
@@ -174,6 +197,9 @@ class playGame extends Phaser.Scene{
         this.matter.world.setBounds(0, -400, game.config.width, game.config.height + 800);
         this.createLevel();
         this.input.on("pointerdown", this.releaseHero, this);
+
+        let touch = false
+
         this.matter.world.on("collisionstart", function(e, b1, b2){
             switch(b1.label){
                 case COIN:
@@ -181,12 +207,14 @@ class playGame extends Phaser.Scene{
                     this.matter.world.remove(b1);
                     score += coinUp
                     this.cameras.main.flash(50, 255, 255, 0);
+                    touch = true
                     break;
                 case SKULL:
                     if(b1.gameObject.y > b2.gameObject.y){
                         b1.gameObject.visible = false;
                         this.matter.world.remove(b1);
                         this.cameras.main.flash(50, 255, 0, 0);
+                        touch = true
                     }
                     else{
                         this.cameras.main.flash(50, 255, 0, 0);
@@ -200,6 +228,7 @@ class playGame extends Phaser.Scene{
                             this.matter.world.remove(b1);
                             this.cameras.main.flash(50, 255, 0, 0);
                             skulls2.splice(skulls2.length - 1, 1)
+                            touch = true
                         } else {
                             skulls2[skulls2.length - 1].hp--
                         }
@@ -214,6 +243,7 @@ class playGame extends Phaser.Scene{
                         b1.gameObject.visible = false;
                         this.matter.world.remove(b1);
                         score += coinUp
+                        touch = true
                     } else {
                         points2[points2.length - 1].hp--
                     }
@@ -225,9 +255,14 @@ class playGame extends Phaser.Scene{
                     this.matter.world.remove(b1);
                     lives++
                     this.cameras.main.flash(50, 50, 50, 50);
+                    touch = true
                     break;
                 default:
                     if(b2.gameObject.y > game.config.height){
+                        if(!touch){
+                            lives--
+                            this.cameras.main.flash(50, 255, 0, 0);
+                        }
                         this.scene.start("PlayGame");
                     }
                     else{
